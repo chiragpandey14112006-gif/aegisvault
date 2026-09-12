@@ -1,0 +1,18 @@
+Title: FinTxnVault Secure In-Memory Payload Encryption System
+
+Developer: Saksham Pandey
+
+Registration Number: 25BAI10660
+
+Institution: VIT Bhopal University
+
+Program: B.Tech Artificial Intelligence and Machine Learning
+FinTxnVault is a Java based cryptographic service built to secure financial payloads in memory. It utilizes AES/GCM/NoPadding encryption to protect sensitive Payment Card Industry (PCI) JSON data. The system tokenizes raw data into encrypted blobs, allowing safe temporary storage and fast retrieval without leaving plaintext footprints in the heap space.
+Handling unencrypted financial transactions like account IDs and currency amounts in memory exposes systems to severe risks, including heap dump scraping. We needed a lightweight locking mechanism to seal this data instantly. The current iteration implements a local AES generation workaround. This specific design choice unblocks our staging environment testing while the permanent AWS KMS integration (InfoSec ticket SEC-4991) remains pending
+Execution Environment: 100% Core Java, fully executable via command line without GUI dependencies. 
+Cryptographic Engine: The LocalEncProvider class generates a 256-bit AES master key via SecureRandom.  
+Data Persistence: A ConcurrentHashMap manages thread safe state operations for all sealed payloads
+Payload Sealing: The sealVaultBlob method strictly enforces JSON boundary checks before wasting CPU cycles. It generates a 12 byte Initialization Vector (IV), encrypts the raw string, and assigns a unique 12 character bx_ UUID tracker token.
+Payload Unsealing: The unsealVaultBlob method maps the tracker ID back to the VaultBlob object. It executes GCM tag validation during decryption to instantly detect tamper evident payloads.
+Scrap the volatile ConcurrentHashMap and migrate to a distributed Redis cache for horizontal scaling.
+Completely remove the local AES master key generation and implement the mandatory AWS KMS architecture for secure key rotation.
